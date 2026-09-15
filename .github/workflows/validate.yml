@@ -1,10 +1,10 @@
-name: Validate
+name: Validate and publish
 
 on:
   push:
+    branches: ['**']
+    tags: ['v*']
   pull_request:
-  release:
-    types: [published]
 
 permissions:
   contents: read
@@ -15,35 +15,40 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: PHP con sodium
-        run: php -v && php -m | grep -qi '^sodium$'
-
       - name: Sintaxis de las herramientas
         run: for f in tools/*.php; do php -l "$f"; done
 
       - name: Validar el paquete
         run: php tools/validate.php
 
-  release:
-    # Comprueba que lo subido a la release está firmado por una clave del repositorio y es válido.
-    if: github.event_name == 'release'
+  publish:
+    # Una etiqueta v<serial> publica el paquete. Sólo si es válido, la etiqueta coincide y la versión es mayor que la
+    # publicada: los sitios rechazarían una menor, pero así ni siquiera llega a publicarse.
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: validate
     runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    env:
+      GH_TOKEN: ${{ github.token }}
+      TAG: ${{ github.ref_name }}
     steps:
       - uses: actions/checkout@v4
 
-      - name: Descargar los ficheros de la release
-        env:
-          GH_TOKEN: ${{ github.token }}
-          TAG: ${{ github.event.release.tag_name }}
-        run: gh release download "$TAG" --pattern 'waf-rules.json*' --dir dist
-
-      - name: Verificar firma y paquete
-        run: php tools/verify.php dist/waf-rules.json dist/waf-rules.json.sig
-
-      - name: La etiqueta coincide con la versión
-        env:
-          TAG: ${{ github.event.release.tag_name }}
+      - name: La etiqueta coincide con la versión del paquete
         run: |
-          serial=$(php -r 'echo json_decode(file_get_contents("dist/waf-rules.json"), true)["serial"];')
+          serial=$(php -r 'echo json_decode(file_get_contents("packages/waf-rules.json"), true)["serial"];')
           test "v$serial" = "$TAG" || { echo "La etiqueta $TAG no coincide con la versión v$serial"; exit 1; }
+
+      - name: La versión es mayor que la publicada
+        run: |
+          serial=$(php -r 'echo json_decode(file_get_contents("packages/waf-rules.json"), true)["serial"];')
+          if gh release download --pattern waf-rules.json --dir previous 2>/dev/null; then
+            published=$(php -r 'echo json_decode(file_get_contents("previous/waf-rules.json"), true)["serial"];')
+            test "$serial" -gt "$published" || { echo "La versión $serial no es mayor que la publicada $published"; exit 1; }
+          else
+            echo "No hay ninguna versión publicada todavía."
+          fi
+
+      - name: Publicar la release
+        run: gh release create "$TAG" packages/waf-rules.json --title "$TAG" --notes "Reglas del WAF, versión ${TAG#v}." --latest

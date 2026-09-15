@@ -2,7 +2,7 @@
 /**
  * Funciones comunes de las herramientas del repositorio de reglas.
  *
- * Deben coincidir con el plugin (AirearteGuard\Rules\Signature y Package). Si cambian allí, cambian aquí.
+ * Deben coincidir con el plugin (AirearteGuard\Rules\Package). Si cambia allí, cambia aquí.
  */
 
 if ( 'cli' !== PHP_SAPI ) {
@@ -12,7 +12,6 @@ if ( 'cli' !== PHP_SAPI ) {
 const AGR_ROOT         = __DIR__ . '/..';
 const AGR_KIND         = 'waf-rules';
 const AGR_PACKAGE      = AGR_ROOT . '/packages/waf-rules.json';
-const AGR_DIST         = AGR_ROOT . '/dist';
 const AGR_MAX_BYTES    = 1048576;
 const AGR_TARGETS      = array( 'uri', 'args', 'args_names', 'cookies', 'headers', 'files' );
 const AGR_TRANSFORMS   = array( 'urldecode', 'html', 'lowercase', 'compress', 'sql_comments', 'null_bytes', 'path' );
@@ -25,70 +24,6 @@ const AGR_RULE_KEYS    = array( 'id', 'category', 'targets', 'transforms', 'patt
 function agr_fail( string $message ) {
 	fwrite( STDERR, "ERROR: $message\n" );
 	exit( 1 );
-}
-
-/**
- * Comprueba que hay Ed25519.
- */
-function agr_require_sodium() {
-	if ( ! function_exists( 'sodium_crypto_sign_detached' ) ) {
-		agr_fail( 'PHP necesita la extensión sodium (en Windows: extension=sodium en php.ini).' );
-	}
-}
-
-/**
- * Texto firmado. Igual que Signature::message() del plugin.
- */
-function agr_message( string $kind, string $content ): string {
-	return 'AirearteGuard signed package v1' . "\n" . $kind . "\n" . $content;
-}
-
-/**
- * Identificador de una clave pública. Igual que Signature::keyId() del plugin.
- */
-function agr_key_id( string $public_key ): string {
-	return substr( hash( 'sha256', $public_key ), 0, 16 );
-}
-
-/**
- * Claves públicas del repositorio: keys/<id>.pub con la clave en base64.
- *
- * @return array<string,string> id => clave binaria
- */
-function agr_public_keys(): array {
-	$keys = array();
-
-	foreach ( glob( AGR_ROOT . '/keys/*.pub' ) as $file ) {
-		$key = base64_decode( trim( (string) file_get_contents( $file ) ), true );
-		$id  = basename( $file, '.pub' );
-
-		if ( ! is_string( $key ) || 32 !== strlen( $key ) || agr_key_id( $key ) !== $id ) {
-			agr_fail( "Clave pública no válida o con nombre incorrecto: $file" );
-		}
-
-		$keys[ $id ] = $key;
-	}
-
-	return $keys;
-}
-
-/**
- * Verifica una firma. Devuelve el id de la clave o cadena vacía.
- */
-function agr_verify( string $content, string $signature, array $keys ): string {
-	$data = json_decode( $signature, true );
-
-	if ( ! is_array( $data ) || 1 !== ( $data['format'] ?? null ) || ! is_string( $data['key'] ?? null ) || ! is_string( $data['signature'] ?? null ) ) {
-		return '';
-	}
-
-	$raw = base64_decode( $data['signature'], true );
-
-	if ( ! isset( $keys[ $data['key'] ] ) || ! is_string( $raw ) || 64 !== strlen( $raw ) ) {
-		return '';
-	}
-
-	return sodium_crypto_sign_verify_detached( $raw, agr_message( AGR_KIND, $content ), $keys[ $data['key'] ] ) ? $data['key'] : '';
 }
 
 /**

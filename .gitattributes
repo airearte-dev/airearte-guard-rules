@@ -1,3 +1,2 @@
-# La firma cubre los bytes exactos: sin conversión de saltos de línea.
+# El paquete se publica tal cual: sin conversión de saltos de línea.
 packages/*.json -text
-keys/*.pub -text
