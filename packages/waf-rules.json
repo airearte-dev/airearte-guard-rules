@@ -1,0 +1,448 @@
+{
+    "format": 1,
+    "kind": "waf-rules",
+    "serial": 2026091501,
+    "released": "2026-09-15",
+    "rules": [
+        {
+            "id": 1001,
+            "category": "sqli",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "sql_comments",
+                "compress"
+            ],
+            "pattern": "/\\bunion\\b[\\s(]+(?:all\\s+|distinct\\s+)?\\(?\\s*select\\b/"
+        },
+        {
+            "id": 1002,
+            "category": "sqli",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "sql_comments",
+                "compress"
+            ],
+            "pattern": "/\\b(?:sleep|benchmark|pg_sleep)\\s*\\(\\s*\\d|\\bwaitfor\\s+delay\\s*['\"]/"
+        },
+        {
+            "id": 1003,
+            "category": "sqli",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "sql_comments",
+                "compress"
+            ],
+            "pattern": "/['\"`\\)]\\s*(?:or|and|xor|\\|\\||&&)\\s*['\"`(]?\\s*(\\w+)\\s*['\"`)]?\\s*(?:=|<=>|like)\\s*['\"`(]?\\s*\\1\\b/"
+        },
+        {
+            "id": 1004,
+            "category": "sqli",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "sql_comments",
+                "compress"
+            ],
+            "pattern": "/\\binformation_schema\\b|\\bmysql\\s*\\.\\s*user\\b|\\bpg_catalog\\b|\\bsysobjects\\b/"
+        },
+        {
+            "id": 1005,
+            "category": "sqli",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "sql_comments",
+                "compress"
+            ],
+            "pattern": "/['\"`]\\s*;\\s*(?:drop|insert|update|delete|select|create|alter|truncate)\\s/"
+        },
+        {
+            "id": 1006,
+            "category": "sqli",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "sql_comments",
+                "compress"
+            ],
+            "pattern": "/\\b(?:extractvalue|updatexml|load_file)\\s*\\(|\\binto\\s+(?:out|dump)file\\b/"
+        },
+        {
+            "id": 1007,
+            "category": "sqli",
+            "targets": [
+                "args",
+                "cookies"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "compress"
+            ],
+            "pattern": "/['\"`]\\s*\\)?\\s*(?:--|#|\\/\\*)[\\s\\S]{0,4}$/"
+        },
+        {
+            "id": 1008,
+            "category": "sqli",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "sql_comments",
+                "compress"
+            ],
+            "pattern": "/^\\s*-?\\d+\\s*\\)?\\s*(?:or|and|xor)\\s+(\\d+)\\s*=\\s*\\1\\s*(?:--|#|\\/\\*|$)|['\"`]\\s*(?:or|and)\\s+(['\"`])\\2\\s*=\\s*\\2/"
+        },
+        {
+            "id": 1009,
+            "category": "sqli",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "sql_comments",
+                "compress"
+            ],
+            "pattern": "/\\border\\s+by\\s+\\d+\\s*-?\\s*$|['\"`)]\\s*(?:having|group\\s+by)\\s+\\d|\\bselect\\b.{1,160}?\\bfrom\\s+(?:[\\w`]*_(?:users|usermeta|options|posts)\\b|dual\\b)|\\bselect\\s+(?:version|user|database|schema|current_user|system_user)\\s*\\(\\s*\\)|@@(?:version|datadir|hostname|basedir)\\b/"
+        },
+        {
+            "id": 2001,
+            "category": "xss",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "compress"
+            ],
+            "pattern": "/<\\s*\\/?\\s*script\\b/",
+            "admin_exempt": true
+        },
+        {
+            "id": 2002,
+            "category": "xss",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "compress"
+            ],
+            "pattern": "/<[a-z][^>]*?[\\s\\/\"']on[a-z]{3,}\\s*=/",
+            "admin_exempt": true
+        },
+        {
+            "id": 2003,
+            "category": "xss",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "compress"
+            ],
+            "pattern": "/(?:[\"'=]|\\burl\\s*\\()\\s*(?:j\\s*a\\s*v\\s*a\\s*s\\s*c\\s*r\\s*i\\s*p\\s*t|v\\s*b\\s*s\\s*c\\s*r\\s*i\\s*p\\s*t)\\s*:|\\bdata\\s*:\\s*text\\/html/",
+            "admin_exempt": true
+        },
+        {
+            "id": 2004,
+            "category": "xss",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "compress"
+            ],
+            "pattern": "/<\\s*(?:iframe|object|embed|base|meta|svg|math)\\b[^>]*>/",
+            "admin_exempt": true
+        },
+        {
+            "id": 2005,
+            "category": "xss",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "compress"
+            ],
+            "pattern": "/[\"'`]\\s*(?:[a-z-]+\\s+){0,3}on(?:load|error|mouse\\w+|focus\\w*|blur|click|dblclick|toggle|animation\\w+|transition\\w+|pointer\\w+|key\\w+|input|change|submit|begin|start|end|finish|pageshow|wheel|scroll|drag\\w*|copy|cut|paste|resize|message)\\s*=/",
+            "admin_exempt": true
+        },
+        {
+            "id": 3001,
+            "category": "lfi",
+            "targets": [
+                "args",
+                "cookies",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "null_bytes",
+                "path",
+                "lowercase"
+            ],
+            "pattern": "/(?:\\.\\.\\/){2,}|\\.\\.\\/+(?:etc|proc|windows|wp-config)|(?:^|\\/)(?:etc\\/(?:passwd|shadow)|proc\\/self\\/environ)\\b/"
+        },
+        {
+            "id": 3002,
+            "category": "lfi",
+            "targets": [
+                "args",
+                "cookies"
+            ],
+            "transforms": [
+                "urldecode",
+                "null_bytes",
+                "path",
+                "lowercase"
+            ],
+            "pattern": "/\\b(?:php|phar|expect|zlib|glob|zip|data):\\/\\//"
+        },
+        {
+            "id": 3003,
+            "category": "lfi",
+            "targets": [
+                "args",
+                "cookies"
+            ],
+            "transforms": [
+                "urldecode",
+                "null_bytes",
+                "path",
+                "lowercase"
+            ],
+            "pattern": "/(?:^|\\/|\\.\\.)wp-config\\.php\\b/"
+        },
+        {
+            "id": 4001,
+            "category": "rce",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "compress"
+            ],
+            "pattern": "/<\\?(?:php\\b|=)|\\b(?:eval|assert|create_function|system|passthru|shell_exec|proc_open|popen|pcntl_exec)\\s*\\(\\s*['\"$\\w(]|\\bcall_user_func(?:_array)?\\s*\\(\\s*['\"](?:system|exec|passthru|shell_exec|assert|eval)\\b|\\bpreg_replace\\s*\\(\\s*(['\"]).{1,100}?\\/e\\w*\\1/",
+            "admin_exempt": true
+        },
+        {
+            "id": 4002,
+            "category": "rce",
+            "targets": [
+                "args",
+                "cookies",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "compress"
+            ],
+            "pattern": "/(?:[;|`]|\\$\\(|&&)\\s*(?:wget|curl|bash|sh|nc|ncat|whoami|uname|chmod|python\\d?|perl)\\s+[-\\w\\/.:]/"
+        },
+        {
+            "id": 4003,
+            "category": "rce",
+            "targets": [
+                "args",
+                "cookies"
+            ],
+            "transforms": [
+                "urldecode",
+                "null_bytes"
+            ],
+            "pattern": "/\\bO:\\d+:\"[A-Za-z0-9_\\\\]+\":\\d+:\\{/"
+        },
+        {
+            "id": 4004,
+            "category": "rce",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "compress"
+            ],
+            "pattern": "/\\$\\{\\s*(?:jndi|\\$\\{)/"
+        },
+        {
+            "id": 4005,
+            "category": "rce",
+            "targets": [
+                "args",
+                "cookies",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "compress"
+            ],
+            "pattern": "/(?:^|[;&|=]\\s*)(?:`|\\$\\()\\s*(?:id|whoami|uname|cat|ls|wget|curl|bash|sh|nc|python\\d?|perl|php)\\b[^`)]{0,100}(?:`|\\))/",
+            "admin_exempt": true
+        },
+        {
+            "id": 4006,
+            "category": "rce",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "compress"
+            ],
+            "pattern": "/\\{\\{\\s*\\d+\\s*[*+]\\s*\\d+\\s*\\}\\}|\\$\\{\\s*\\d+\\s*[*+]\\s*\\d+\\s*\\}|<%=?\\s*\\d+\\s*[*+]\\s*\\d+\\s*%>/"
+        },
+        {
+            "id": 5001,
+            "category": "upload",
+            "targets": [
+                "files"
+            ],
+            "transforms": [
+                "null_bytes",
+                "lowercase"
+            ],
+            "pattern": "/\\.(?:php\\d?|phtml|phar|pht|phps)(?:\\.|$)/",
+            "fast": false
+        }
+    ]
+}

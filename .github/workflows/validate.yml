@@ -1,0 +1,49 @@
+name: Validate
+
+on:
+  push:
+  pull_request:
+  release:
+    types: [published]
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: PHP con sodium
+        run: php -v && php -m | grep -qi '^sodium$'
+
+      - name: Sintaxis de las herramientas
+        run: for f in tools/*.php; do php -l "$f"; done
+
+      - name: Validar el paquete
+        run: php tools/validate.php
+
+  release:
+    # Comprueba que lo subido a la release está firmado por una clave del repositorio y es válido.
+    if: github.event_name == 'release'
+    needs: validate
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Descargar los ficheros de la release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.event.release.tag_name }}
+        run: gh release download "$TAG" --pattern 'waf-rules.json*' --dir dist
+
+      - name: Verificar firma y paquete
+        run: php tools/verify.php dist/waf-rules.json dist/waf-rules.json.sig
+
+      - name: La etiqueta coincide con la versión
+        env:
+          TAG: ${{ github.event.release.tag_name }}
+        run: |
+          serial=$(php -r 'echo json_decode(file_get_contents("dist/waf-rules.json"), true)["serial"];')
+          test "v$serial" = "$TAG" || { echo "La etiqueta $TAG no coincide con la versión v$serial"; exit 1; }

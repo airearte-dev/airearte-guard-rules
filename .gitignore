@@ -1,0 +1,8 @@
+# Nunca claves privadas en el repositorio.
+*.key
+*.secret
+secret*
+private*
+
+# Ficheros firmados: se suben a la release, no se versionan.
+dist/
