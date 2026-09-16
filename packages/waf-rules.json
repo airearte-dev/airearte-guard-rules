@@ -1,8 +1,8 @@
 {
     "format": 1,
     "kind": "waf-rules",
-    "serial": 2026091501,
-    "released": "2026-09-15",
+    "serial": 2026091602,
+    "released": "2026-09-16",
     "rules": [
         {
             "id": 1001,
@@ -179,6 +179,26 @@
                 "compress"
             ],
             "pattern": "/\\border\\s+by\\s+\\d+\\s*-?\\s*$|['\"`)]\\s*(?:having|group\\s+by)\\s+\\d|\\bselect\\b.{1,160}?\\bfrom\\s+(?:[\\w`]*_(?:users|usermeta|options|posts)\\b|dual\\b)|\\bselect\\s+(?:version|user|database|schema|current_user|system_user)\\s*\\(\\s*\\)|@@(?:version|datadir|hostname|basedir)\\b/"
+        },
+        {
+            "id": 1010,
+            "category": "sqli",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "uri",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "html",
+                "null_bytes",
+                "lowercase",
+                "sql_comments",
+                "compress"
+            ],
+            "pattern": "/\\b(?:drop|truncate|alter|rename)\\s+(?:temporary\\s+)?table\\b|\\bdrop\\s+(?:database|schema)\\b|\\bupdate\\s+[\\w`.]+\\s+set\\s+[\\w`.]+\\s*=|\\b(?:delete\\s+from|(?:insert|replace)\\s+into)\\s+(?!the\\b|your\\b|our\\b|my\\b|a\\b|an\\b|this\\b|that\\b|these\\b|those\\b|here\\b|there\\b|it\\b|us\\b|me\\b|any\\b|some\\b|each\\b|every\\b|all\\b)[\\w`.(]/"
         },
         {
             "id": 2001,
