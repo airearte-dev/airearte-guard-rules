@@ -18,12 +18,13 @@ jobs:
       - name: Sintaxis de las herramientas
         run: for f in tools/*.php; do php -l "$f"; done
 
-      - name: Validar el paquete
+      - name: Validar los paquetes
         run: php tools/validate.php
 
   publish:
-    # Una etiqueta v<serial> publica el paquete. Sólo si es válido, la etiqueta coincide y la versión es mayor que la
-    # publicada: los sitios rechazarían una menor, pero así ni siquiera llega a publicarse.
+    # Una etiqueta v<serial> publica los paquetes. Sólo si son válidos, ninguno supera la etiqueta, ninguno baja de la
+    # versión publicada y al menos uno trae algo nuevo: los sitios rechazarían una versión menor, pero así ni siquiera
+    # llega a publicarse.
     if: startsWith(github.ref, 'refs/tags/v')
     needs: validate
     runs-on: ubuntu-latest
@@ -35,20 +36,12 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: La etiqueta coincide con la versión del paquete
-        run: |
-          serial=$(php -r 'echo json_decode(file_get_contents("packages/waf-rules.json"), true)["serial"];')
-          test "v$serial" = "$TAG" || { echo "La etiqueta $TAG no coincide con la versión v$serial"; exit 1; }
+      - name: Lo que ya está publicado
+        run: gh release download --pattern '*.json' --dir previous || echo "No hay ninguna versión publicada todavía."
 
-      - name: La versión es mayor que la publicada
-        run: |
-          serial=$(php -r 'echo json_decode(file_get_contents("packages/waf-rules.json"), true)["serial"];')
-          if gh release download --pattern waf-rules.json --dir previous 2>/dev/null; then
-            published=$(php -r 'echo json_decode(file_get_contents("previous/waf-rules.json"), true)["serial"];')
-            test "$serial" -gt "$published" || { echo "La versión $serial no es mayor que la publicada $published"; exit 1; }
-          else
-            echo "No hay ninguna versión publicada todavía."
-          fi
+      - name: La etiqueta y las versiones son correctas
+        run: php tools/publish-check.php "$TAG" previous
 
+      # Cada release lleva los dos paquetes: los sitios descargan siempre de la última, cada uno con su propia versión.
       - name: Publicar la release
-        run: gh release create "$TAG" packages/waf-rules.json --title "$TAG" --notes "Reglas del WAF, versión ${TAG#v}." --latest
+        run: gh release create "$TAG" packages/waf-rules.json packages/malware-signatures.json --title "$TAG" --notes "Reglas del WAF y firmas de malware, versión ${TAG#v}." --latest
