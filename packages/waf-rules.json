@@ -1,7 +1,7 @@
 {
     "format": 1,
     "kind": "waf-rules",
-    "serial": 2026091602,
+    "serial": 2026091603,
     "released": "2026-09-16",
     "rules": [
         {
@@ -42,7 +42,7 @@
                 "sql_comments",
                 "compress"
             ],
-            "pattern": "/\\b(?:sleep|benchmark|pg_sleep)\\s*\\(\\s*\\d|\\bwaitfor\\s+delay\\s*['\"]/"
+            "pattern": "/\\b(?:sleep|benchmark|pg_sleep)\\s*\\(\\s*(?:[\\d(]|\\w+\\s*\\()|\\bwaitfor\\s+delay\\s*['\"]/"
         },
         {
             "id": 1003,
@@ -62,7 +62,7 @@
                 "sql_comments",
                 "compress"
             ],
-            "pattern": "/['\"`\\)]\\s*(?:or|and|xor|\\|\\||&&)\\s*['\"`(]?\\s*(\\w+)\\s*['\"`)]?\\s*(?:=|<=>|like)\\s*['\"`(]?\\s*\\1\\b/"
+            "pattern": "/['\"`\\)]\\s*(?:or|and|xor|\\|\\||&&)\\s*(?:['\"`(]?\\s*(\\w+)\\s*['\"`)]?\\s*(?:=|<=>|>=|<=|<>|!=|>|<|r?like|regexp)\\s*['\"`(]?\\s*\\1\\b|\\(?\\s*-?\\d+\\s*(?:>=|<=|<>|!=|>|<)\\s*-?\\d+)/"
         },
         {
             "id": 1004,
@@ -158,7 +158,7 @@
                 "sql_comments",
                 "compress"
             ],
-            "pattern": "/^\\s*-?\\d+\\s*\\)?\\s*(?:or|and|xor)\\s+(\\d+)\\s*=\\s*\\1\\s*(?:--|#|\\/\\*|$)|['\"`]\\s*(?:or|and)\\s+(['\"`])\\2\\s*=\\s*\\2/"
+            "pattern": "/^\\s*-?\\d+\\s*\\)?\\s*(?:or|and|xor)\\s+(\\d+)\\s*=\\s*\\1\\s*(?:--|#|\\/\\*|$)|^\\s*-?\\d+\\s*\\)?\\s*(?:or|and|xor)\\s*\\(?\\s*-?\\d+\\s*(?:(?:>=|<=|<>|!=|>|<)\\s*-?\\d+|between\\s+\\d+\\s+and\\s+\\d+|in\\s*\\(\\s*-?\\d|r?like\\b|regexp\\b)|['\"`]\\s*(?:or|and)\\s+(['\"`])\\2\\s*=\\s*\\2/"
         },
         {
             "id": 1009,
@@ -297,7 +297,7 @@
                 "lowercase",
                 "compress"
             ],
-            "pattern": "/[\"'`]\\s*(?:[a-z-]+\\s+){0,3}on(?:load|error|mouse\\w+|focus\\w*|blur|click|dblclick|toggle|animation\\w+|transition\\w+|pointer\\w+|key\\w+|input|change|submit|begin|start|end|finish|pageshow|wheel|scroll|drag\\w*|copy|cut|paste|resize|message)\\s*=/",
+            "pattern": "/[\"'`]\\s*(?:[a-z-]+\\s+){0,3}on(?:load|error|mouse\\w+|focus\\w*|blur|click|dblclick|toggle|animation\\w+|transition\\w+|pointer\\w+|key\\w+|input|change|submit|begin|start|end|finish|pageshow|wheel|scroll|drag\\w*|copy|cut|paste|resize|message|contextmenu|auxclick|before\\w+|select\\w*|invalid|reset|cancel|close|search)\\s*=/",
             "admin_exempt": true
         },
         {
@@ -306,7 +306,8 @@
             "targets": [
                 "args",
                 "cookies",
-                "headers"
+                "headers",
+                "uri"
             ],
             "transforms": [
                 "urldecode",
@@ -314,14 +315,15 @@
                 "path",
                 "lowercase"
             ],
-            "pattern": "/(?:\\.\\.\\/){2,}|\\.\\.\\/+(?:etc|proc|windows|wp-config)|(?:^|\\/)(?:etc\\/(?:passwd|shadow)|proc\\/self\\/environ)\\b/"
+            "pattern": "/(?:\\.\\.\\/){2,}|\\.\\.[\\/\\\\]{2,}|\\.{4,}[\\/\\\\]|\\.\\.\\/+(?:etc|proc|windows|wp-config)|(?:^|\\/)(?:etc\\/(?:passwd|shadow)|proc\\/self\\/environ)\\b/"
         },
         {
             "id": 3002,
             "category": "lfi",
             "targets": [
                 "args",
-                "cookies"
+                "cookies",
+                "uri"
             ],
             "transforms": [
                 "urldecode",
@@ -336,7 +338,8 @@
             "category": "lfi",
             "targets": [
                 "args",
-                "cookies"
+                "cookies",
+                "uri"
             ],
             "transforms": [
                 "urldecode",
@@ -345,6 +348,23 @@
                 "lowercase"
             ],
             "pattern": "/(?:^|\\/|\\.\\.)wp-config\\.php\\b/"
+        },
+        {
+            "id": 3004,
+            "category": "lfi",
+            "targets": [
+                "args",
+                "args_names",
+                "cookies",
+                "headers"
+            ],
+            "transforms": [
+                "urldecode",
+                "null_bytes",
+                "path",
+                "lowercase"
+            ],
+            "pattern": "/(?:^|[\\/\\\\])(?:win\\.ini|boot\\.ini|id_(?:rsa|dsa|ed25519)|\\.env|\\.bash_history)\\b|(?:^|[\\/\\\\])(?:\\.ssh\\/|\\.aws\\/credentials|\\.git\\/config)|[a-z]:[\\/\\\\]windows[\\/\\\\]/"
         },
         {
             "id": 4001,
@@ -362,7 +382,7 @@
                 "lowercase",
                 "compress"
             ],
-            "pattern": "/<\\?(?:php\\b|=)|\\b(?:eval|assert|create_function|system|passthru|shell_exec|proc_open|popen|pcntl_exec)\\s*\\(\\s*['\"$\\w(]|\\bcall_user_func(?:_array)?\\s*\\(\\s*['\"](?:system|exec|passthru|shell_exec|assert|eval)\\b|\\bpreg_replace\\s*\\(\\s*(['\"]).{1,100}?\\/e\\w*\\1/",
+            "pattern": "/<\\?(?:php\\b|=)|\\b(?:eval|assert|create_function|system|passthru|shell_exec|proc_open|popen|pcntl_exec|exec)\\s*\\(\\s*['\"$\\w(]|\\bcall_user_func(?:_array)?\\s*\\(\\s*['\"](?:system|exec|passthru|shell_exec|assert|eval)\\b|\\bpreg_replace\\s*\\(\\s*(['\"]).{1,100}?\\/e\\w*\\1/",
             "admin_exempt": true
         },
         {
@@ -393,7 +413,7 @@
                 "urldecode",
                 "null_bytes"
             ],
-            "pattern": "/\\bO:\\d+:\"[A-Za-z0-9_\\\\]+\":\\d+:\\{/"
+            "pattern": "/\\b[OC]:\\d+:\"[A-Za-z0-9_\\\\]+\":\\d+:\\{/"
         },
         {
             "id": 4004,
@@ -461,7 +481,7 @@
                 "null_bytes",
                 "lowercase"
             ],
-            "pattern": "/\\.(?:php\\d?|phtml|phar|pht|phps)(?:\\.|$)/",
+            "pattern": "/\\.(?:php\\d?|phtml|phar|pht|phps)(?:\\.|$)|(?:^|[\\/\\\\])\\.(?:htaccess|user\\.ini)$/",
             "fast": false
         }
     ]
